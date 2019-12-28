@@ -1,7 +1,16 @@
-FROM ubuntu:18.04
+FROM debian:buster-slim
 
-RUN echo deb http://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse > /etc/apt/sources.list && \
-        echo deb http://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse >> /etc/apt/sources.list && \
-        echo deb http://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse >> /etc/apt/sources.list && \
-        echo deb http://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse >> /etc/apt/sources.list && \
-        apt-get update && apt-get install -y apt-transport-https build-essential python-pip && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cmake
+ARG CMAKE_VERSION=3.16.1
+
+WORKDIR /tmp
+
+RUN apt update && \
+    apt install -y procps build-essential ca-certificates wget curl git openssl libssl-dev zlib1g-dev libcurl4-openssl-dev && \
+    apt clean && \
+    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION.tar.gz && \
+    tar zxvf cmake-$CMAKE_VERSION.tar.gz && \
+    cd cmake-$CMAKE_VERSION && \
+    ./bootstrap --system-curl --parallel=$(nproc) && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && rm -rf *
