@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG CMAKE_VERSION=3.16.1
+ARG CMAKE_VERSION=3.18.1
 
 WORKDIR /tmp
 
