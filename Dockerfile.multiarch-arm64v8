@@ -1,0 +1,25 @@
+FROM alpine AS builder
+
+# Download QEMU, see https://github.com/docker/hub-feedback/issues/1261
+ENV QEMU_URL https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-aarch64.tar.gz
+RUN apk add curl && curl -L ${QEMU_URL} | tar zxvf - -C . --strip-components 1
+
+FROM gcc@sha256:39a94b23fba83078dbf2cdaa7c048d8a3f9e9c896d4d86e8f1ab687b4a57fc15
+
+# Add QEMU
+COPY --from=builder qemu-aarch64-static /usr/bin
+
+ARG CMAKE_VERSION=3.19.0
+
+WORKDIR /tmp
+
+RUN apt update && \
+    apt install -y build-essential ca-certificates wget curl git openssl libssl-dev zlib1g-dev libcurl4-openssl-dev && \
+    apt clean && \
+    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION.tar.gz && \
+    tar zxvf cmake-$CMAKE_VERSION.tar.gz && \
+    cd cmake-$CMAKE_VERSION && \
+    ./bootstrap --system-curl --parallel=$(nproc) && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && rm -rf *
