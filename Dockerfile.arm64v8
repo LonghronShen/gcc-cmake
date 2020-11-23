@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM armv6v8/debian:bullseye-slim
 
 ARG CMAKE_VERSION=3.19.0
 
